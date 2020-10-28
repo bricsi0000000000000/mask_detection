@@ -1,13 +1,13 @@
 ﻿import os
 import cv2
 
-DIRECTORY = "archive/annotations/images"
+DIRECTORY = "archive/images"
 IMAGE_EXTENSION = ".png"
 
 annotations = ""
 
 def convert(filename_str, coords):
-  image = cv2.imread(filename_str + IMAGE_EXTENSION)
+  image = cv2.imread(DIRECTORY + "/" + filename_str + IMAGE_EXTENSION)
   coords[2] -= coords[0]
   coords[3] -= coords[1]
   x_diff = int(coords[2]/2)
@@ -69,9 +69,9 @@ for file in os.listdir(DIRECTORY):
               pass
 
         if(x_min >= 0 and y_min >= 0 and x_max >= 0 and y_max >= 0):
-          coordinates = convert(file, [x_min, y_max, x_max, y_max])
-          annotations = str(classNumber) + " " + str(x_min) + " " + str(x_max) + " " + str(y_min) + " " + str(y_max) + " " + "\n"
-          annotationsFile = open("archive/annotations/" + imageName[0:-4] + ".txt", "a")
+          coordinates = convert(file[0:-4], [x_min, y_min, x_max, y_max])
+          annotations = str(classNumber) + " " + str(coordinates[0]) + " " + str(coordinates[1]) + " " + str(coordinates[2]) + " " + str(coordinates[3]) + " " + "\n"
+          annotationsFile = open("archive/images/" + imageName[0:-4] + ".txt", "a")
           annotationsFile.write(annotations)
           annotationsFile.close()
 
