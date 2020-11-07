@@ -5,6 +5,7 @@ from functools import reduce
 from PIL import Image
 import numpy as np
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
+import cv2
 
 def compose(*funcs):
     """Compose arbitrarily many functions, evaluated left to right.
@@ -17,18 +18,28 @@ def compose(*funcs):
     else:
         raise ValueError('Composition of empty sequence not supported.')
 
-def letterbox_image(image, size):
-    '''resize image with unchanged aspect ratio using padding'''
-    iw, ih = image.size
-    w, h = size
-    scale = min(w/iw, h/ih)
-    nw = int(iw*scale)
-    nh = int(ih*scale)
+def image_preporcess(image, target_size, gt_boxes=None):
 
-    image = image.resize((nw,nh), Image.BICUBIC)
-    new_image = Image.new('RGB', size, (128,128,128))
-    new_image.paste(image, ((w-nw)//2, (h-nh)//2))
-    return new_image
+    ih, iw    = target_size
+    h,  w, _  = image.shape
+
+    scale = min(iw/w, ih/h)
+    nw = int(scale * w)
+    nh = int(scale * h)
+    
+    image_resized = cv2.resize(image, (nw, nh), interpolation=cv2.INTER_CUBIC)
+
+    image_paded = np.full(shape=[ih, iw, 3], fill_value=128.0)
+    dw, dh = (iw - nw) // 2, (ih-nh) // 2
+    image_paded[dh:nh+dh, dw:nw+dw, :] = image_resized
+
+    image_paded = np.array(image_paded, dtype='float32')
+    
+    image_paded = image_paded / 255.
+    
+    image_paded = np.expand_dims(image_paded, axis=0)
+
+    return image_paded
 
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
